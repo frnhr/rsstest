@@ -16,7 +16,13 @@ class Feed(models.Model):
 class Entry(models.Model):
     feed = models.ForeignKey(Feed, null=False)
     timestamp = models.DateTimeField()
-    text = models.TextField(null=False, default=u'')
+    title = models.CharField(max_length=1000, null=False, blank=True, default=u'')
+    text = models.TextField(null=False, blank=True, default=u'')
+    
+    def __unicode__(self):
+        if self.title:
+            return self.title
+        return "(untitled entry)"
     
     def save(self, *args, **kwargs):
         if self.datetime is None:
