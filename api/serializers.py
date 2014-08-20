@@ -35,42 +35,44 @@ class WordEntrySerializer(serializers.HyperlinkedModelSerializer):
 class LinkNestedSelf(Field):
     url = None
     view_name = None
-    lookup_parents = None
-    url_parameters = None
-    parent_fields = None
-    field = None
+    parents_lookup = None
+    self_field = None
     
-    def __init__(self, view_name, lookup_parents, url_parameters=None, parent_fields=None, field='pk', *args, **kwargs):
+    def __init__(self, view_name, parents_lookup=None, self_field='pk', *args, **kwargs):
         super(LinkNestedSelf, self).__init__(*args, **kwargs)
         self.view_name = view_name
-        self.lookup_parents = lookup_parents
-        self.url_parameters = url_parameters
-        self.parent_fields = parent_fields
-        self.field = field
+        self.parents_lookup = parents_lookup
+        self.self_field = self_field
         
     def field_to_native(self, obj, field_name):
         request = self.context.get('request', None)
-        lookup_parents = self.lookup_parents[::-1]
-        if self.url_parameters is None:
-            self.url_parameters = ['pk'] * len(self.lookup_parents)
-        url_parameters = self.url_parameters[::-1]
-        if self.parent_fields is None:
-            self.parent_fields = ['pk'] * len(self.lookup_parents)
-        parent_fields = self.parent_fields[::-1]
-        parents = []
-        kwargs = {
-            self.field: getattr(obj, self.field),
-        }
-        for field_name in lookup_parents:
-            if "__" not in field_name:  #@TODO /me should have done a recursion, really...
-                parents.append((getattr(obj, field_name), field_name))
+        
+        parent_data = [{'obj': obj, 'field': self.self_field, 'value': getattr(obj, self.self_field) }, ]
+        
+        def get_parent_data(parent_lookup, parent_data):
+            if len(parent_lookup) < 1:
+                return parent_data
+            lookup = parent_lookup.pop()
+            parent_attr = lookup[0].split("__")[-1] 
+            parent_field = lookup[1]
+            obj = parent_data[-1]['obj']
+            parent = getattr(obj, parent_attr)
+            parent_data.append({
+                'obj': parent,
+                'field': parent_field,
+                'value': getattr(parent, parent_field),
+                'lookup': lookup[0],
+            })
+            return get_parent_data(parent_lookup, parent_data)
+        
+        parents_data = get_parent_data(self.parents_lookup[:], parent_data)
+        kwargs = {}
+        for i, parent_data in enumerate(parents_data):
+            if i == 0:
+                kwargs[parent_data['field']] = parent_data['value']
             else:
-                known_name, new_name = field_name.split("__", 1)
-                parents.append((getattr(parents[-1][0], new_name), new_name))
-        that = obj
-        for i, (parent, field_name) in enumerate(parents):
-            kwargs[url_parameters[i]] = getattr(getattr(that, field_name), parent_fields[i])
-            that = parent
+                kwargs['parent_lookup_%s' % parent_data['lookup']] = parent_data['value']
+        
         return reverse(self.view_name, kwargs=kwargs, request=request)
 
 
@@ -91,7 +93,12 @@ class EntrySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class WordSerializer(serializers.HyperlinkedModelSerializer):
-    _url = LinkNestedSelf(view_name="feeds-entries-word-detail", lookup_parents=['entry__feed', 'entry', ], url_parameters=['parent_lookup_entry__feed', 'parent_lookup_entry'], parent_fields=['pk', 'pk'])
+    _url = LinkNestedSelf(view_name="feeds-entries-word-detail", 
+                          parents_lookup=[
+                              ('entry__feed', 'pk'),
+                              ('entry', 'pk'),
+                              ], 
+                          self_field='pk')
     
     class Meta:
         model = Word
