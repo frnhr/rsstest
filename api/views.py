@@ -1,9 +1,6 @@
 from rest_framework import viewsets
-from rest_framework.decorators import link
-from rest_framework.response import Response
 from rest_framework_extensions.mixins import NestedViewSetMixin, DetailSerializerMixin
 from api.models import Feed, Entry, Word
-from api.serializers import WordEntrySerializer
 from .serializers import FeedListSerializer, EntryListSerializer, EntrySerializer, WordSerializer, FeedSerializer
 
 
