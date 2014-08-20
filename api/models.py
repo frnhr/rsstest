@@ -25,8 +25,8 @@ class Entry(models.Model):
         return "(untitled entry)"
     
     def save(self, *args, **kwargs):
-        if self.datetime is None:
-            self.datetime = timezone.now()
+        if self.timestamp is None:
+            self.timestamp = timezone.now()
         super(Entry, self).save(*args, **kwargs)
     
     
