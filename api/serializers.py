@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
+from rest_framework.serializers import HyperlinkedModelSerializer
 from api.models import Feed, Entry, Word
 
 
@@ -15,6 +17,14 @@ class EntryListSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Entry
         fields = ('_url', 'title', )
+
+
+class WordEntrySerializer(serializers.HyperlinkedModelSerializer):
+    #_url = HyperlinkedIdentityField(view_name="word-detail", format='html', )
+    
+    class Meta:
+        model = Word
+        fields = ('_url', 'word', 'count', )
 
 
 

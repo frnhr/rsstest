@@ -14,7 +14,7 @@ class Feed(models.Model):
     
     
 class Entry(models.Model):
-    feed = models.ForeignKey(Feed, null=False, related_name='entries')
+    feed = models.ForeignKey(Feed, related_name='entries', null=False)
     timestamp = models.DateTimeField()
     title = models.CharField(max_length=1000, null=False, blank=True, default=u'')
     text = models.TextField(null=False, blank=True, default=u'')
@@ -32,7 +32,7 @@ class Entry(models.Model):
     
 class Word(models.Model):
     word = models.CharField(max_length=255, null=False, blank=False)
-    entry = models.ForeignKey(Entry, null=False, blank=False)
+    entry = models.ForeignKey(Entry, related_name='words', null=False, blank=False)
     count = models.PositiveIntegerField(null=False, blank=False, default=0)
     
     def __unicode__(self):

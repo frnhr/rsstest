@@ -1,5 +1,8 @@
 from rest_framework import viewsets
+from rest_framework.decorators import link
+from rest_framework.response import Response
 from api.models import Feed, Entry, Word
+from api.serializers import WordEntrySerializer
 from .serializers import FeedListSerializer, EntryListSerializer, EntrySerializer, WordSerializer, FeedSerializer
 
 
@@ -53,8 +56,16 @@ class EntryViewSet(MultiSerializerViewSetMixin, viewsets.ModelViewSet):
     serializer_class = EntrySerializer
     serializer_action_classes = {
        'list': EntryListSerializer,
+       'words': EntryListSerializer,
     }
-
+    
+    @link()
+    def words(self, request, pk=None):
+        entry = self.get_object()
+        queryset = entry.words.all()
+        serializer = WordEntrySerializer(queryset, many=True, )
+        return Response(serializer.data)
+        
 
 class WordViewSet(viewsets.ModelViewSet):
     """
