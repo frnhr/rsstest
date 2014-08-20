@@ -32,24 +32,27 @@ class WordEntrySerializer(serializers.HyperlinkedModelSerializer):
 
 # detail serializers
 
-class LinkNestedSelf(Field):
+class HyperlinkNestedSelf(Field):
     url = None
     view_name = None
     parents_lookup = None
     self_field = None
     
     def __init__(self, view_name, parents_lookup=None, self_field='pk', *args, **kwargs):
-        super(LinkNestedSelf, self).__init__(*args, **kwargs)
+        super(HyperlinkNestedSelf, self).__init__(*args, **kwargs)
         self.view_name = view_name
         self.parents_lookup = parents_lookup
         self.self_field = self_field
         
     def field_to_native(self, obj, field_name):
         request = self.context.get('request', None)
-        
-        parent_data = [{'obj': obj, 'field': self.self_field, 'value': getattr(obj, self.self_field) }, ]
+        parents_lookup = [[parent_lookup, 'pk'] if isinstance(parent_lookup, basestring) else parent_lookup
+                            for parent_lookup in self.parents_lookup]  # copy the list and make "pk" optional default
         
         def get_parent_data(parent_lookup, parent_data):
+            """
+            Gather parent objects and field values
+            """
             if len(parent_lookup) < 1:
                 return parent_data
             lookup = parent_lookup.pop()
@@ -64,9 +67,11 @@ class LinkNestedSelf(Field):
                 'lookup': lookup[0],
             })
             return get_parent_data(parent_lookup, parent_data)
+
+        parent_data = [{'obj': obj, 'field': self.self_field, 'value': getattr(obj, self.self_field) }, ]
+        parents_data = get_parent_data(parents_lookup, parent_data)
         
-        parents_data = get_parent_data(self.parents_lookup[:], parent_data)
-        kwargs = {}
+        kwargs = {}  # populate kwargs for URL reverse() call
         for i, parent_data in enumerate(parents_data):
             if i == 0:
                 kwargs[parent_data['field']] = parent_data['value']
@@ -93,12 +98,7 @@ class EntrySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class WordSerializer(serializers.HyperlinkedModelSerializer):
-    _url = LinkNestedSelf(view_name="feeds-entries-word-detail", 
-                          parents_lookup=[
-                              ('entry__feed', 'pk'),
-                              ('entry', 'pk'),
-                              ], 
-                          self_field='pk')
+    _url = HyperlinkNestedSelf(view_name="feeds-entries-word-detail", parents_lookup=['entry__feed', 'entry', ])
     
     class Meta:
         model = Word
