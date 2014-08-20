@@ -14,7 +14,7 @@ class Feed(models.Model):
     
     
 class Entry(models.Model):
-    feed = models.ForeignKey(Feed, null=False)
+    feed = models.ForeignKey(Feed, null=False, related_name='entries')
     timestamp = models.DateTimeField()
     title = models.CharField(max_length=1000, null=False, blank=True, default=u'')
     text = models.TextField(null=False, blank=True, default=u'')
