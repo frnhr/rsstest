@@ -9,18 +9,23 @@ class HyperlinkNestedSelf(Field):
     view_name = None
     parents_lookup = None
     self_field = None
+    obj_field = None
     
-    def __init__(self, view_name, parents_lookup=None, self_field='pk', *args, **kwargs):
+    def __init__(self, view_name, parents_lookup=None, obj_field=None, self_field='pk', *args, **kwargs):
         super(HyperlinkNestedSelf, self).__init__(*args, **kwargs)
         self.view_name = view_name
         self.parents_lookup = parents_lookup
         self.self_field = self_field
+        self.obj_field = obj_field
         
     def field_to_native(self, obj, field_name):
         request = self.context.get('request', None)
         parents_lookup = [[parent_lookup, 'pk'] if isinstance(parent_lookup, basestring) else parent_lookup
                             for parent_lookup in self.parents_lookup]  # copy the list and make "pk" optional default
-        
+        if self.obj_field is not None:
+            obj = getattr(obj, self.obj_field)
+            #@TODO this is a good point to unify with HyperlinkNestedViewField
+            
         def get_parent_data(parent_lookup, parent_data):
             """
             Gather parent objects and field values
@@ -133,6 +138,7 @@ class WordEntrySerializer(serializers.HyperlinkedModelSerializer):
 
 class WordSerializer(serializers.HyperlinkedModelSerializer):
     _url = HyperlinkNestedSelf(view_name="feeds-entries-word-detail", parents_lookup=['entry__feed', 'entry', ])
+    entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
     
     class Meta:
         model = Word
