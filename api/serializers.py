@@ -1,36 +1,8 @@
 from rest_framework import serializers
 from rest_framework.fields import Field
-from rest_framework.relations import HyperlinkedIdentityField, HyperlinkedRelatedField
 from rest_framework.reverse import reverse
-from rest_framework.serializers import HyperlinkedModelSerializer, Serializer
 from api.models import Feed, Entry, Word
 
-
-# list serializers
-
-
-class FeedListSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Feed
-        fields = ('_url', 'url', 'is_active', )
-
-
-class EntryListSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Entry
-        fields = ('_url', 'title', )
-
-
-class WordEntrySerializer(serializers.HyperlinkedModelSerializer):
-    #_url = HyperlinkedIdentityField(view_name="word-detail", format='html', )
-    
-    class Meta:
-        model = Word
-        fields = ('_url', 'word', 'count', )
-
-
-
-# detail serializers
 
 class HyperlinkNestedSelf(Field):
     url = None
@@ -79,6 +51,34 @@ class HyperlinkNestedSelf(Field):
                 kwargs['parent_lookup_%s' % parent_data['lookup']] = parent_data['value']
         
         return reverse(self.view_name, kwargs=kwargs, request=request)
+
+
+# list serializers
+
+
+class FeedListSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Feed
+        fields = ('_url', 'url', 'is_active', )
+
+
+class EntryListSerializer(serializers.HyperlinkedModelSerializer):
+    _url = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ])
+
+    class Meta:
+        model = Entry
+        fields = ('_url', 'title', )
+
+
+class WordEntrySerializer(serializers.HyperlinkedModelSerializer):
+    #_url = HyperlinkedIdentityField(view_name="word-detail", format='html', )
+    
+    class Meta:
+        model = Word
+        fields = ('_url', 'word', 'count', )
+
+
+# detail serializers
 
 
 class FeedSerializer(serializers.HyperlinkedModelSerializer):
