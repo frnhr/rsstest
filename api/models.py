@@ -39,6 +39,9 @@ class Word(models.Model):
     def __unicode__(self):
         return self.word
     
+    class Meta:
+        ordering = ['word', 'entry__id', ]
+    
 
 #@TODO another model for feed-level word counting, basically a cache?
 
