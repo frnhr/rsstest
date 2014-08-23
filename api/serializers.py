@@ -131,6 +131,7 @@ class WordEntrySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Word
         fields = ('_url', 'word', 'count', )
+        read_only_fields = fields
 
 
 # detail serializers
@@ -143,6 +144,7 @@ class WordSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Word
         fields = ('_url', 'word', 'count', 'entry', )
+        
 
 
 

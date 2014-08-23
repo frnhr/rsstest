@@ -11,12 +11,14 @@ class FeedViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewS
     queryset = Feed.objects.all()
     serializer_class = FeedListSerializer
     serializer_detail_class = FeedSerializer
+    http_method_names = ('get', 'head', 'options', 'post', 'delete', )
 
 
 class EntryViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows feed entries to be viewed or edited.
     """
+    http_method_names = ('get', 'head', 'options', )
     queryset = Entry.objects.all()
     serializer_class = EntryListSerializer
     serializer_detail_class = EntrySerializer
@@ -26,5 +28,6 @@ class WordViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows words in an entry to be viewed or edited.
     """
+    http_method_names = ('get', 'head', 'options', )
     queryset = Word.objects.all()
     serializer_class = WordSerializer
