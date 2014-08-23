@@ -148,11 +148,11 @@ class WordSerializer(serializers.HyperlinkedModelSerializer):
 
 class EntrySerializer(serializers.HyperlinkedModelSerializer):
     _url = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ])
-    words = HyperlinkNestedViewField(view_name='feeds-entries-word-list', parents_lookup=['entry__feed', 'entry', ], nested_field="words")
+    _words = HyperlinkNestedViewField(view_name='feeds-entries-word-list', parents_lookup=['entry__feed', 'entry', ], nested_field="words")
     
     class Meta:
         model = Entry
-        fields = ('_url', 'feed', 'title', 'timestamp', 'text', 'words', )
+        fields = ('_url', '_words', 'feed', 'title', 'timestamp', 'text', )
 
 
 class FeedSerializer(serializers.HyperlinkedModelSerializer):
