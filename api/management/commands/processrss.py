@@ -56,7 +56,7 @@ class Command(BaseCommand):
                     tick('words count')
                     for word, count in wordcount.iteritems():
                         word = Word.objects.get_or_create(entry=entry, word=word)[0]  # (word, created)[0]
-                        word.count = count
+                        word.count += count
                         word.save()
                     tick('words save')
         print u"done"
