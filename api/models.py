@@ -32,8 +32,8 @@ class Entry(models.Model):
 
 
 class WordCount(models.Model):
-    word = models.ForeignKey('Word')
-    entry = models.ForeignKey('Entry')
+    word = models.ForeignKey('Word', related_name='wordcounts')
+    entry = models.ForeignKey('Entry', related_name='wordcounts')
     count = models.PositiveIntegerField(default=0)
 
 

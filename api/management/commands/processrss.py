@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.utils.html import strip_tags
 import feedparser
 import time
-from api.models import Feed, Entry, Word
+from api.models import Feed, Entry, Word, WordCount
 
 
 def tick(desc=None):
@@ -55,8 +55,9 @@ class Command(BaseCommand):
                             wordcount[word] += 1
                     tick('words count')
                     for word, count in wordcount.iteritems():
-                        word = Word.objects.get_or_create(entry=entry, word=word)[0]  # (word, created)[0]
-                        word.count += count
-                        word.save()
+                        word = Word.objects.get_or_create(word=word)[0]  # (word, created)[0]
+                        wordcount = WordCount.objects.get_or_create(word=word, entry=entry)[0]
+                        wordcount.count = count
+                        wordcount.save()
                     tick('words save')
         print u"done"
