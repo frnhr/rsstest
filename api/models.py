@@ -18,6 +18,7 @@ class Entry(models.Model):
     timestamp = models.DateTimeField()
     title = models.CharField(max_length=1000, null=False, blank=True, default=u'')
     text = models.TextField(null=False, blank=True, default=u'')
+    url = models.URLField(null=False, blank=False, default=u'')
     
     def __unicode__(self):
         if self.title:
