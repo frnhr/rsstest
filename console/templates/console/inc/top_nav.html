@@ -1,0 +1,7 @@
+{% with active=active|default:"home" %}
+    <ul class="nav nav-pills pull-right">
+        <li class="{% if active == "home" %}active{% endif %}"><a href="{% url "home" %}">Home</a></li>
+        <li class="{% if active == "feeds" %}active{% endif %}"><a href="{% url "feeds" %}">Feeds</a></li>
+        <li class="{% if active == "words" %}active{% endif %}"><a href="#">Words</a></li>
+    </ul>
+{% endwith %}

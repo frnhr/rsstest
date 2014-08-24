@@ -10,8 +10,12 @@ class UserContextMixin(object):
         context = super(UserContextMixin, self).get_context_data(**kwargs)
         context['user'] = self.request.user
         return context
-    
+
 
 class HomeView(UserContextMixin, TemplateView):
     template_name = 'console/home.html'
-    
+
+
+class FeedsView(UserContextMixin, TemplateView):
+    template_name = 'console/feeds.html'
+

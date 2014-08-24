@@ -1,2 +1,8 @@
 .nav-pills.center {
   display: inline-block; }
+
+.inline_img {
+  max-height: 40px;
+  width: auto;
+  display: inline-block;
+  vertical-align: middle; }
