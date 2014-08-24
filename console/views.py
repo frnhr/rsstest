@@ -1,5 +1,9 @@
-from django.shortcuts import render
 from django.views.generic.base import TemplateView
+
+from extra_views.formsets import ModelFormSetView
+from api.models import Feed
+from .forms import FeedActivateForm
+
 
 # noinspection PyUnresolvedReferences
 class UserContextMixin(object):
@@ -16,6 +20,11 @@ class HomeView(UserContextMixin, TemplateView):
     template_name = 'console/home.html'
 
 
-class FeedsView(UserContextMixin, TemplateView):
+class FeedsView(ModelFormSetView):
+    
+    form_class = FeedActivateForm
+    model = Feed
     template_name = 'console/feeds.html'
+    extra = 1
+    
 

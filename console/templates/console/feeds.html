@@ -8,6 +8,12 @@
             <h1>These are feedz</h1>
             <p class="lead">You can edit feedz. Almost.<br />Add yes. Enable yes. Disable yes. Change url no-no.</p>
             <p>This is a classic formset, no fancy <img src="{{ STATIC_URL }}console/img/ajax.jpg" class="inline_img has_tooltip" alt="AJAX" title="AJAX" data-toggle="tooltip" data-placement="top"  /> stuff.</p>
+            <form action="" method="post">
+                {% csrf_token %}
+                {{ formset.management_form }}
+                {{ formset.as_p }}
+                <input type="submit" />
+            </form>
           </div>
       </div>
 
