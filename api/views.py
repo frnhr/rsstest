@@ -56,7 +56,43 @@ class WordCountViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedVie
 
 class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, viewsets.ModelViewSet):
     """
-    API endpoint that allows words in an entry to be viewed or edited.
+    API endpoint that shows word counts per entries. Allows querying for word, entry and feed.
+
+    Usage: ?f=http://blog.codinghorror.com/rss/
+      - lists all words in all entries of that feed
+      - words will appear multiple times, once for each entry!
+
+    Usage: ?e=http://blog.codinghorror.com/the-just-in-time-theory/
+      - lists all words one selected entry
+      - words are distinct
+
+    Usage: ?w=the
+      - lists all entries where word "the" appears
+      - words will appear multiple times, once for each entry!
+
+    Usage: ?w=the&feed=1
+      - lists all entries in a feed where word "the" appears
+      - feeds (and entries) can be identified using wither their external URL or internal ID
+      - words will appear multiple times, once for each entry!
+
+    Response:
+    {
+        "results_count": 23,   //////// number of words found in current query
+        "next": "http://localhost:8000/words/?feed=1&page=2&w=the", //////// pagination 
+        "previous": null,  //////// pagination
+        "count__sum": 817,  //////// sum of all word counts in current query 
+        "results": [
+            {   //////// details about one word-entry pair
+                "_url": "http://localhost:8000/feeds/1/entries/8/wordcounts/1966/", 
+                "word": "the", 
+                "count": 94, 
+                "entry": "http://localhost:8000/feeds/1/entries/8/", 
+                "entry_title": "App-pocalypse Now", 
+                "feed_url": "http://blog.codinghorror.com/rss/"
+            },
+            ...
+        ]
+    }
     """
     http_method_names = ('get', 'head', 'options', )
     queryset = WordCount.objects.all()
@@ -80,7 +116,7 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
                 self.message = u'Please use either "f" or "e" query, bot not both.'
 
             if w:  # word
-                queryset = queryset.filter(word__word=w)
+                queryset = queryset.filter(word__word=w.lower())
 
             if e:  # entry
                 try:
@@ -101,7 +137,7 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
                     queryset = queryset.filter(entry__feed__id=f_int).distinct()
                 else:  # ?f=<url>
                     queryset = queryset.filter(entry__feed__url=f).distinct()
-        return queryset
+        return queryset.order_by('-count')
 
     def list(self, request, *args, **kwargs):
         response = super(WordCountRootViewSet, self).list(request, *args, **kwargs)
