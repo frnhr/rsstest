@@ -6,7 +6,21 @@ from .serializers import FeedListSerializer, EntryListSerializer, EntrySerialize
     WordCountListSerializer, WordListSerializer, WordCountRootSerializer
 
 
-class FeedViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
+# noinspection PyUnresolvedReferences
+class RenameResultsCountMixin(object):
+    """
+    Renames "count" field on ListView views to "results_count", so that it is not confused with word counts.
+    """
+    def list(self, request, *args, **kwargs):
+        response = super(RenameResultsCountMixin, self).list(request, *args, **kwargs)
+        results_count = response.data['count']
+        index = response.data.keys().index('count')
+        del response.data['count']
+        response.data.insert(index, 'results_count', results_count)
+        return response
+
+
+class FeedViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows feeds to be viewed or edited.
     """
@@ -16,7 +30,7 @@ class FeedViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewS
     http_method_names = ('get', 'head', 'options', 'post', 'put', 'delete', )
 
 
-class EntryViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
+class EntryViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows feed entries to be viewed or edited.
     """
@@ -26,7 +40,7 @@ class EntryViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelView
     serializer_detail_class = EntrySerializer
 
 
-class WordCountViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
+class WordCountViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows words in an entry to be viewed or edited.
     """
@@ -36,7 +50,7 @@ class WordCountViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.Model
     serializer_detail_class = WordCountSerializer
 
 
-class WordCountRootViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
+class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows words in an entry to be viewed or edited.
     """
