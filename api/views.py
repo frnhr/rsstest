@@ -31,7 +31,7 @@ class FeedViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetM
     queryset = Feed.objects.all()
     serializer_class = FeedListSerializer
     serializer_detail_class = FeedSerializer
-    http_method_names = ('get', 'head', 'options', 'post', 'put', 'delete', )
+    http_method_names = ('get', 'head', 'options', 'post', 'patch', 'delete', )
 
 
 class EntryViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):

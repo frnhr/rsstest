@@ -222,4 +222,5 @@ class FeedSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Feed
         fields = ('_url', '_entries', 'url', 'is_active', )
+        read_only_fields = ('url', )
 
