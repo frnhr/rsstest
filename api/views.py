@@ -1,8 +1,10 @@
+from itertools import count
 from django.db.models import Sum
 from django.http.response import HttpResponseBadRequest
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.reverse import reverse
 from rest_framework.status import is_client_error
 from rest_framework_extensions.mixins import NestedViewSetMixin, DetailSerializerMixin
 from api.models import Feed, Entry, Word, WordCount
@@ -113,7 +115,7 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
                 # perhaps move this check to list()?
                 # it tests thread-safe though.
                 self.status = status.HTTP_406_NOT_ACCEPTABLE
-                self.message = u'Please use either "f" or "e" query, bot not both.'
+                self.message = u'Please use either "f" or "e" query, not both.'
 
             if w:  # word
                 queryset = queryset.filter(word__word=w.lower())
@@ -143,5 +145,26 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
         response = super(WordCountRootViewSet, self).list(request, *args, **kwargs)
         if is_client_error(self.status):
             return Response(self.message, status=self.status)
-        response.data.insert(3, 'count__sum', self.get_queryset().aggregate(Sum('count'))['count__sum'])
+        count_sum = self.get_queryset().aggregate(Sum('count'))['count__sum']
+        if count_sum is None:
+            count_sum = 0
+        response.data.insert(3, 'count__sum', count_sum)
+        query_dict = self.request.GET.copy()
+        if 'page' in query_dict.keys():
+            del query_dict['page']
+        response.data.insert(4, '_simple', reverse('words-simple-list', request=self.request) + ("?{}".format(query_dict.urlencode()) if query_dict else ''))
         return response
+
+
+class WordCountSimpleViewSet(WordCountRootViewSet):
+    """
+    Simplified API endpoint, same as /words, but with only count__sum as output. 
+    """
+    serializer_class = WordCountRootSerializer
+
+    def list(self, request, *args, **kwargs):
+        response = super(WordCountSimpleViewSet, self).list(request, *args, **kwargs)
+        if response.status_code != status.HTTP_200_OK:
+            return response
+        return Response(response.data.get('count__sum', 0), status.HTTP_200_OK)
+

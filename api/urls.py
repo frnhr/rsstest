@@ -1,11 +1,15 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from . import views
-from rest_framework.routers import DefaultRouter
+from rest_framework.routers import DefaultRouter, SimpleRouter
 from rest_framework_extensions.routers import ExtendedDefaultRouter
 
 
 admin.autodiscover()
+
+
+additional_router = SimpleRouter()
+additional_router.register(r'words/simple', views.WordCountSimpleViewSet, base_name='words-simple'),
 
 
 router = ExtendedDefaultRouter()
@@ -25,6 +29,7 @@ router = ExtendedDefaultRouter()
 )
 
 urlpatterns = patterns('',
+    url(r'', include(additional_router.urls)),
     url(r'', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 )

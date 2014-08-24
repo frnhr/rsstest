@@ -188,8 +188,6 @@ class WordCountRootSerializer(serializers.HyperlinkedModelSerializer):
     entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
     entry_title = EntryTitleField()
     feed_url = FeedURLField()
-    
-
 
     class Meta:
         model = WordCount
