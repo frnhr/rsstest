@@ -1,8 +1,9 @@
-from itertools import islice
 from json.decoder import JSONDecoder
-from django.db.models import Sum, Count
+from django.db.models import Sum
 from rest_framework import viewsets
 from rest_framework import status
+from rest_framework.generics import GenericAPIView
+from rest_framework.mixins import ListModelMixin
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.status import is_client_error
@@ -228,18 +229,8 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
         return self.empty_query if not self.json_query else self.json_query
 
 
-
-class WordCountTopViewSet(viewsets.ViewSet):
+class WordCountTopViewSet(ListModelMixin, GenericAPIView, viewsets.ViewSet):
     serializer_class = WordCountTopSerializer
-    #@TODO add pagination to serializer
-
-    def list(self, request):
-        queryset = self.get_queryset()
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
-
-    def retrieve(self, request, pk=None):
-        raise NotImplementedError
 
     def get_queryset(self, is_for_detail=False):
         #@TODO add query support
