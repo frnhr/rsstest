@@ -1,4 +1,6 @@
 from itertools import count
+from json.decoder import JSONDecoder
+from django.core.serializers.json import Serializer, DjangoJSONEncoder
 from django.db.models import Sum
 from django.http.response import HttpResponseBadRequest
 from rest_framework import viewsets
@@ -104,12 +106,21 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
     status = 200
     message = ''
 
+    def get_query(self):
+        w = self.request.GET.get('w', None)
+        f = self.request.GET.get('f', None)  # url decoded behind-the-scene
+        e = self.request.GET.get('e', None)  # url decoded behind-the-scene
+        return {
+            'w': w,
+            'e': e,
+            'f': f,
+        }
+
+
     def get_queryset(self, is_for_detail=False):
         queryset = super(WordCountRootViewSet, self).get_queryset(is_for_detail)
+        w, e, f = map(self.get_query().get, ('w', 'e', 'f'))
         if not is_for_detail:
-            w = self.request.GET.get('w', None)
-            f = self.request.GET.get('f', None)  # url decoded behind-the-scene
-            e = self.request.GET.get('e', None)  # url decoded behind-the-scene
             if f and e:
                 #@TODO this self.stuff thing is not the prettiest way of accomplishing this.
                 # perhaps move this check to list()?
@@ -153,6 +164,7 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
         if 'page' in query_dict.keys():
             del query_dict['page']
         response.data.insert(4, '_simple', reverse('words-simple-list', request=self.request) + ("?{}".format(query_dict.urlencode()) if query_dict else ''))
+        response.data.insert(5, '_simple_json', reverse('words-json-list', request=self.request))
         return response
 
 
@@ -168,3 +180,38 @@ class WordCountSimpleViewSet(WordCountRootViewSet):
             return response
         return Response(response.data.get('count__sum', 0), status.HTTP_200_OK)
 
+
+class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
+    """
+    Simplified API endpoint, same as /words/simple, but it takes JSON query and responds to POST (instead of query parameters and GET).
+    Sample JSON query object:
+    {
+    "w": "the",
+    "f": "http://blog.codinghorror.com/rss/"
+    }
+    Note: JSON does not support single quotes!!!11
+    """
+
+    json_query = None
+    empty_query = {
+        'w': None,
+        'e': None,
+        'f': None,
+    }
+
+    def http_method_not_allowed(self, request, *args, **kwargs):
+        """
+        If `request.method` does not correspond to a handler method,
+        determine what kind of exception to raise.
+        """
+        if request.method == 'POST':
+            return self.get(request, *args, **kwargs)
+        super(WordCountSimpleJsonViewSet, self).http_method_not_allowed(request, *args, **kwargs)
+
+    def get_query(self):
+        if self.request.method == 'POST':
+            if self.json_query is None:
+                self.json_query = JSONDecoder().decode(self.request.body) 
+        return self.empty_query if self.json_query is None else self.json_query
+
+    

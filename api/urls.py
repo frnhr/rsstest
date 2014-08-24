@@ -10,6 +10,7 @@ admin.autodiscover()
 
 additional_router = SimpleRouter()
 additional_router.register(r'words/simple', views.WordCountSimpleViewSet, base_name='words-simple'),
+additional_router.register(r'words/json', views.WordCountSimpleJsonViewSet, base_name='words-json'),
 
 
 router = ExtendedDefaultRouter()

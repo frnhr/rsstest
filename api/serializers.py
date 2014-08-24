@@ -57,6 +57,7 @@ class HyperlinkNestedSelf(Field):
         
         return reverse(self.view_name, kwargs=kwargs, request=request)
 
+
 #@TODO DRY it out
 class HyperlinkNestedViewField(Field):
     url = None
@@ -141,6 +142,7 @@ class WordField(serializers.CharField):
         Given and object and a field name, returns the value that should be
         serialized for that field.
         """
+        #return obj.word.word if obj else ''
         return obj.word.word
 
 
@@ -151,6 +153,7 @@ class WordCountListSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = WordCount
         fields = ('_url', 'word', 'count', )
+
 
 class WordCountWordListSerializer(serializers.HyperlinkedModelSerializer):
     _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
@@ -214,7 +217,6 @@ class EntrySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class FeedSerializer(serializers.HyperlinkedModelSerializer):
-    #entries = EntryListSerializer(many=True, read_only=True)
     _entries = HyperlinkNestedViewField(view_name='feeds-entry-list', parents_lookup=['feed', ], nested_field="entries")
     
     class Meta:
