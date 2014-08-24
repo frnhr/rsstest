@@ -1,5 +1,6 @@
+from itertools import islice
 from json.decoder import JSONDecoder
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
@@ -8,7 +9,7 @@ from rest_framework.status import is_client_error
 from rest_framework_extensions.mixins import NestedViewSetMixin, DetailSerializerMixin
 from api.models import Feed, Entry, WordCount
 from .serializers import FeedListSerializer, EntryListSerializer, EntrySerializer, WordCountSerializer, FeedSerializer, \
-    WordCountListSerializer, WordCountRootSerializer
+    WordCountListSerializer, WordCountRootSerializer, WordCountTopSerializer
 
 
 # noinspection PyUnresolvedReferences
@@ -226,3 +227,22 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
                     self.message = "JSON decode error: {}".format(e.message)
         return self.empty_query if not self.json_query else self.json_query
 
+
+
+class WordCountTopViewSet(viewsets.ViewSet):
+    serializer_class = WordCountTopSerializer
+    #@TODO add pagination to serializer
+
+    def list(self, request):
+        queryset = self.get_queryset()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, pk=None):
+        raise NotImplementedError
+
+    def get_queryset(self, is_for_detail=False):
+        #@TODO add query support
+        queryset = WordCount.objects.all()
+        queryset = queryset.values('word__word').annotate(count=Sum('count')).order_by("-count", "word__word")
+        return queryset

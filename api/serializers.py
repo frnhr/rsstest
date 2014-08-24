@@ -196,6 +196,22 @@ class WordCountRootSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('_url', 'word', 'count', 'entry', 'entry_title', 'feed_url' )
 
 
+class WordCountTopSerializer(serializers.Serializer):
+
+    class WordWordField(serializers.CharField):
+
+        def field_to_native(self, obj, field_name):
+            """
+            Given and object and a field name, returns the value that should be
+            serialized for that field.
+            """
+            #return obj.word.word if obj else ''
+            return obj['word__word']
+        
+    word = WordWordField()
+    count = serializers.Field()
+
+
 class WordCountSerializer(serializers.HyperlinkedModelSerializer):
     _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
     entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
