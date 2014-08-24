@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from rest_framework.fields import Field
-from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.reverse import reverse
 from api.models import Feed, Entry, Word, WordCount
 
@@ -11,14 +10,14 @@ class HyperlinkNestedSelf(Field):
     parents_lookup = None
     self_field = None
     obj_field = None
-    
+
     def __init__(self, view_name, parents_lookup=None, obj_field=None, self_field='pk', *args, **kwargs):
         super(HyperlinkNestedSelf, self).__init__(*args, **kwargs)
         self.view_name = view_name
         self.parents_lookup = parents_lookup
         self.self_field = self_field
         self.obj_field = obj_field
-        
+
     def field_to_native(self, obj, field_name):
         request = self.context.get('request', None)
         parents_lookup = [[parent_lookup, 'pk'] if isinstance(parent_lookup, basestring) else parent_lookup
@@ -26,7 +25,7 @@ class HyperlinkNestedSelf(Field):
         if self.obj_field is not None:
             obj = getattr(obj, self.obj_field)
             #@TODO this is a good point to unify with HyperlinkNestedViewField
-            
+
         def get_parent_data(parent_lookup, parent_data):
             """
             Gather parent objects and field values
@@ -156,7 +155,7 @@ class WordCountListSerializer(serializers.HyperlinkedModelSerializer):
 class WordCountWordListSerializer(serializers.HyperlinkedModelSerializer):
     _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
     entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
-
+    
     class Meta:
         model = WordCount
         fields = ('_url', 'entry', 'count', )
@@ -174,32 +173,27 @@ class WordListSerializer(serializers.HyperlinkedModelSerializer):
 # detail serializers
 
 
-class WordSerializer(serializers.HyperlinkedModelSerializer):
-    
-    class WordCountWordSerializer(serializers.HyperlinkedModelSerializer):
-        
-        class FeedURLField(Field):
-            def field_to_native(self, obj, field_name):
-                return obj.entry.feed.url
-        
-        class EntryTitleField(Field):
-            def field_to_native(self, obj, field_name):
-                return obj.entry.title
-        
-        _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
-        entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
-        entry_title = EntryTitleField()
-        feed_url = FeedURLField()
-        
-        class Meta:
-            model = WordCount
-            fields = ('_url', 'entry', 'count', 'feed_url', 'entry_title' )
+class WordCountRootSerializer(serializers.HyperlinkedModelSerializer):
 
-    wordcounts = WordCountWordSerializer()
+    class FeedURLField(Field):
+        def field_to_native(self, obj, field_name):
+            return obj.entry.feed.url
+    
+    class EntryTitleField(Field):
+        def field_to_native(self, obj, field_name):
+            return obj.entry.title
+    
+    _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
+    word = WordField()
+    entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
+    entry_title = EntryTitleField()
+    feed_url = FeedURLField()
+    
+
 
     class Meta:
-        model = Word
-        fields = ('_url', 'word', 'wordcounts', )
+        model = WordCount
+        fields = ('_url', 'word', 'count', 'entry', 'entry_title', 'feed_url' )
 
 
 class WordCountSerializer(serializers.HyperlinkedModelSerializer):
