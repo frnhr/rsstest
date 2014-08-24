@@ -26,5 +26,17 @@ class FeedsView(ModelFormSetView):
     model = Feed
     template_name = 'console/feeds.html'
     extra = 1
-    
+
+    def get_success_url(self):
+        url = super(FeedsView, self).get_success_url()
+        self.request.session['feeds_saved_ok'] = True
+        return url
+
+    def get_context_data(self, **kwargs):
+        context = super(FeedsView, self).get_context_data(**kwargs)
+        if self.request.session.get('feeds_saved_ok', False):
+            context['saved_ok'] = True
+            del self.request.session['feeds_saved_ok']
+        return context
+
 

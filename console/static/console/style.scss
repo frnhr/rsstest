@@ -8,3 +8,16 @@
     display: inline-block;
     vertical-align: middle;
 }
+
+form.formset fieldset {
+    padding-bottom: 2em;
+    
+    input[type="checkbox"] {
+        margin-top: 0.8em;
+    }
+}
+
+hr.vspace {
+    border: none;
+    margin-top: 2em;
+}

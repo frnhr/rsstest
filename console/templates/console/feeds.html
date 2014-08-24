@@ -8,11 +8,36 @@
             <h1>These are feedz</h1>
             <p class="lead">You can edit feedz. Almost.<br />Add yes. Enable yes. Disable yes. Change url no-no.</p>
             <p>This is a classic formset, no fancy <img src="{{ STATIC_URL }}console/img/ajax.jpg" class="inline_img has_tooltip" alt="AJAX" title="AJAX" data-toggle="tooltip" data-placement="top"  /> stuff.</p>
-            <form action="" method="post">
+
+            {% if saved_ok %}
+                <div class="alert alert-success alert-dismissible" role="alert">
+                    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    Feed data saved successfully.
+                </div>
+            {% endif %}
+        
+            <form action="" method="post" class="form-horizontal formset" role="form">
                 {% csrf_token %}
                 {{ formset.management_form }}
-                {{ formset.as_p }}
-                <input type="submit" />
+                {% for form in formset %}
+                    <fieldset>
+                        <legend>{{ form.instance.url|default:"Add another" }}</legend>
+                        {% for field in form %}
+                            {% if field.is_hidden %}
+                                {{ field }}
+                            {% else %}
+                                <div class="form-group form-group">
+                                    <label class="col-sm-2 control-label" for="{{ field.auto_id }}">{{ field.label }}</label>
+                                    <div class="col-sm-10">
+                                      {{ field }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </fieldset>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary center-block">Submit</button>
+                <hr class="vspace" />   
             </form>
           </div>
       </div>
