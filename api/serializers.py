@@ -212,7 +212,7 @@ class EntrySerializer(serializers.HyperlinkedModelSerializer):
     
     class Meta:
         model = Entry
-        fields = ('_url', '_wordcounts', 'feed', 'title', 'timestamp', 'text', )
+        fields = ('_url', '_wordcounts', 'feed', 'title', 'url', 'timestamp', 'text', )
 
 
 class FeedSerializer(serializers.HyperlinkedModelSerializer):

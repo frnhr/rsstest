@@ -38,6 +38,7 @@ class Command(BaseCommand):
                     entry.timestamp = timezone.now()
                     entry.title = rss_entry.title
                     entry.text = strip_tags(rss_entry.description)
+                    entry.url = rss_entry.link
                     entry.save()
                 #@TODO handle situations when entry description changes
 

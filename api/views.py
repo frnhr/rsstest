@@ -69,19 +69,30 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
     def get_queryset(self, is_for_detail=False):
         queryset = super(WordCountRootViewSet, self).get_queryset(is_for_detail)
         if not is_for_detail:
-            q = self.request.GET.get('q', None)
-            if q:
-                queryset = queryset.filter(word__word=q)
+            w = self.request.GET.get('w', None)
             f = self.request.GET.get('f', None)  # url decoded behind-the-scene
             e = self.request.GET.get('e', None)  # url decoded behind-the-scene
             if f and e:
                 #@TODO this self.stuff thing is not the prettiest way of accomplishing this.
-                # perhaps move this check to list()
-                # it tests thread-safe though
+                # perhaps move this check to list()?
+                # it tests thread-safe though.
                 self.status = status.HTTP_406_NOT_ACCEPTABLE
                 self.message = u'Please use either "f" or "e" query, bot not both.'
-            
-            if f:
+
+            if w:  # word
+                queryset = queryset.filter(word__word=w)
+
+            if e:  # entry
+                try:
+                    e_int = int(e)
+                except ValueError:
+                    e_int = False
+                if e_int and str(e_int) == e:  # ?e=<id>
+                    queryset = queryset.filter(entry__id=e_int).distinct()
+                else:  # ?e=<url>
+                    queryset = queryset.filter(entry__url=e).distinct()
+
+            if f:  # feed
                 try:
                     f_int = int(f)
                 except ValueError:
