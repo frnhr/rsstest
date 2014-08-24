@@ -40,10 +40,14 @@
                 "ajax": '{% url "words-top-list" %}',
                 "bProcessing": true,
                 "bServerSide": true,
-                "results": [
-                    { "results": "word" },
-                    { "results": "count" }
-                ]
+                "columns": [
+                    { "data": "word" },
+                    { "data": "count" }
+                ],
+                "filter":   false,
+                "ordering": false,
+                "info":     false,
+                "bLengthChange": false
             });
         });
     </script>

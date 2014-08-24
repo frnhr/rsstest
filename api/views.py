@@ -47,6 +47,18 @@ class AggregateCountMixin(object):
         return response
 
 
+class DatatableSupportMixin(object):
+
+    def list(self, request, *args, **kwargs):
+        response = super(DatatableSupportMixin, self).list(request, *args, **kwargs)
+        if request.GET.get('draw', False):
+            response.data['draw'] = request.GET['draw']
+            response.data['recordsTotal'] = response.data['results_count']
+            response.data['recordsFiltered'] = response.data['results_count']
+            response.data['data'] = response.data['results']
+            del response.data['results']
+        return response
+
 class FeedViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows feeds to be viewed, added, deleted and en/disabled.
@@ -252,7 +264,8 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
         return self.empty_query if not self.json_query else self.json_query
 
 
-class WordCountTopViewSet(QueryFilterMixin, AggregateCountMixin, RenameResultsCountMixin, ListModelMixin, GenericAPIView, viewsets.ViewSet):
+class WordCountTopViewSet(DatatableSupportMixin, QueryFilterMixin, AggregateCountMixin, RenameResultsCountMixin,
+                          ListModelMixin, GenericAPIView, viewsets.ViewSet):
     serializer_class = WordCountTopSerializer
 
     def get_queryset(self, is_for_detail=False):
