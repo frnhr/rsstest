@@ -43,3 +43,11 @@ class WordViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewS
     queryset = Word.objects.all()
     serializer_class = WordListSerializer
     serializer_detail_class = WordSerializer
+    
+    def get_queryset(self, is_for_detail=False):
+        queryset = super(WordViewSet, self).get_queryset(is_for_detail)
+        if not is_for_detail:
+            q = self.request.GET.get('q', None)
+            if q:
+                queryset = queryset.filter(word=q)
+        return queryset
