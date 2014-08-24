@@ -1,17 +1,7 @@
 from django.conf.urls import patterns, include, url
-from django.contrib import admin
-from . import views
-from rest_framework.routers import DefaultRouter, SimpleRouter
+from rest_framework.routers import SimpleRouter
 from rest_framework_extensions.routers import ExtendedDefaultRouter
-
-
-admin.autodiscover()
-
-
-additional_router = SimpleRouter()
-additional_router.register(r'words/simple', views.WordCountSimpleViewSet, base_name='words-simple'),
-additional_router.register(r'words/json', views.WordCountSimpleJsonViewSet, base_name='words-json'),
-
+from . import views
 
 router = ExtendedDefaultRouter()
 (
@@ -28,6 +18,12 @@ router = ExtendedDefaultRouter()
                     base_name='feeds-entries-wordcount',
                     parents_query_lookups=['entry__feed', 'entry', ]),
 )
+
+
+additional_router = SimpleRouter()
+additional_router.register(r'words/simple', views.WordCountSimpleViewSet, base_name='words-simple'),
+additional_router.register(r'words/json', views.WordCountSimpleJsonViewSet, base_name='words-json'),
+
 
 urlpatterns = patterns('',
     url(r'', include(additional_router.urls)),

@@ -5,6 +5,11 @@ from api.models import Feed, Entry, Word, WordCount
 
 
 class HyperlinkNestedSelf(Field):
+    """
+    Use instead of default URL field on nested resources.
+    Because default URL field looks for url named "<resource>-detail", and url.reverse args are not compatible.
+    Note: a read-only field
+    """
     url = None
     view_name = None
     parents_lookup = None
@@ -47,35 +52,39 @@ class HyperlinkNestedSelf(Field):
 
         parent_data = [{'obj': obj, 'field': self.self_field, 'value': getattr(obj, self.self_field) }, ]
         parents_data = get_parent_data(parents_lookup, parent_data)
-        
+
         kwargs = {}  # populate kwargs for URL reverse() call
         for i, parent_data in enumerate(parents_data):
             if i == 0:
                 kwargs[parent_data['field']] = parent_data['value']
             else:
                 kwargs['parent_lookup_%s' % parent_data['lookup']] = parent_data['value']
-        
+
         return reverse(self.view_name, kwargs=kwargs, request=request)
 
 
-#@TODO DRY it out
+#@TODO DRY it out, it's quite similar to HyperlinkNestedSelf
 class HyperlinkNestedViewField(Field):
+    """
+    Use to link to arbitrary url that has relationship with current resource.
+    Note: a read-only field
+    """
     url = None
     view_name = None
     parents_lookup = None
     nested_field = None
-    
+
     def __init__(self, view_name, parents_lookup=None, nested_field=None, *args, **kwargs):
         super(HyperlinkNestedViewField, self).__init__(*args, **kwargs)
         self.view_name = view_name
         self.parents_lookup = parents_lookup
         self.nested_field = nested_field
-        
+
     def field_to_native(self, obj, field_name):
         request = self.context.get('request', None)
         parents_lookup = [[parent_lookup, 'pk'] if isinstance(parent_lookup, basestring) else parent_lookup
                             for parent_lookup in self.parents_lookup]  # copy the list and make "pk" optional default
-        
+
         def get_parent_data(parent_lookup, parent_data):
             """
             Gather parent objects and field values
@@ -98,14 +107,14 @@ class HyperlinkNestedViewField(Field):
         setattr(nested_obj, parents_lookup[-1][0], obj)
         parent_data = [{'obj': nested_obj, 'field': 'pk', 'value': getattr(nested_obj, 'pk') }, ]
         parents_data = get_parent_data(parents_lookup, parent_data)
-        
+
         kwargs = {}  # populate kwargs for URL reverse() call
         for i, parent_data in enumerate(parents_data):
             if i == 0:
                 pass
             else:
                 kwargs['parent_lookup_%s' % parent_data['lookup']] = parent_data['value']
-        
+
         return reverse(self.view_name, kwargs=kwargs, request=request)
 
 
@@ -124,15 +133,6 @@ class EntryListSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Entry
         fields = ('_url', 'title', )
-
-
-class WordEntrySerializer(serializers.HyperlinkedModelSerializer):
-    #_url = HyperlinkedIdentityField(view_name="word-detail", format='html', )
-
-    class Meta:
-        model = Word
-        fields = ('_url', 'word', 'count', )
-        read_only_fields = fields
 
 
 class WordField(serializers.CharField):
@@ -155,22 +155,21 @@ class WordCountListSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('_url', 'word', 'count', )
 
 
-class WordCountWordListSerializer(serializers.HyperlinkedModelSerializer):
-    _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
-    entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
-    
-    class Meta:
-        model = WordCount
-        fields = ('_url', 'entry', 'count', )
-
-
 class WordListSerializer(serializers.HyperlinkedModelSerializer):
+
+    class WordCountWordListSerializer(serializers.HyperlinkedModelSerializer):
+        _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
+        entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
+
+        class Meta:
+            model = WordCount
+            fields = ('_url', 'entry', 'count', )
+
     wordcounts = WordCountWordListSerializer()
-    
+
     class Meta:
         model = Word
         fields = ('_url', 'word', 'wordcounts', )
-
 
 
 # detail serializers
@@ -181,11 +180,11 @@ class WordCountRootSerializer(serializers.HyperlinkedModelSerializer):
     class FeedURLField(Field):
         def field_to_native(self, obj, field_name):
             return obj.entry.feed.url
-    
+
     class EntryTitleField(Field):
         def field_to_native(self, obj, field_name):
             return obj.entry.title
-    
+
     _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
     word = WordField()
     entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
@@ -201,7 +200,7 @@ class WordCountSerializer(serializers.HyperlinkedModelSerializer):
     _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
     entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
     word = WordField()
-    
+
     class Meta:
         model = WordCount
         fields = ('_url', 'entry', 'word', 'count', )
@@ -210,7 +209,7 @@ class WordCountSerializer(serializers.HyperlinkedModelSerializer):
 class EntrySerializer(serializers.HyperlinkedModelSerializer):
     _url = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ])
     _wordcounts = HyperlinkNestedViewField(view_name='feeds-entries-wordcount-list', parents_lookup=['entry__feed', 'entry', ], nested_field="wordcounts")
-    
+
     class Meta:
         model = Entry
         fields = ('_url', '_wordcounts', 'feed', 'title', 'url', 'timestamp', 'text', )
@@ -218,7 +217,7 @@ class EntrySerializer(serializers.HyperlinkedModelSerializer):
 
 class FeedSerializer(serializers.HyperlinkedModelSerializer):
     _entries = HyperlinkNestedViewField(view_name='feeds-entry-list', parents_lookup=['feed', ], nested_field="entries")
-    
+
     class Meta:
         model = Feed
         fields = ('_url', '_entries', 'url', 'is_active', )

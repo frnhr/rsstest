@@ -1,17 +1,14 @@
-from itertools import count
 from json.decoder import JSONDecoder
-from django.core.serializers.json import Serializer, DjangoJSONEncoder
 from django.db.models import Sum
-from django.http.response import HttpResponseBadRequest
 from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework.status import is_client_error
 from rest_framework_extensions.mixins import NestedViewSetMixin, DetailSerializerMixin
-from api.models import Feed, Entry, Word, WordCount
+from api.models import Feed, Entry, WordCount
 from .serializers import FeedListSerializer, EntryListSerializer, EntrySerializer, WordCountSerializer, FeedSerializer, \
-    WordCountListSerializer, WordListSerializer, WordCountRootSerializer
+    WordCountListSerializer, WordCountRootSerializer
 
 
 # noinspection PyUnresolvedReferences
@@ -30,7 +27,7 @@ class RenameResultsCountMixin(object):
 
 class FeedViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
-    API endpoint that allows feeds to be viewed or edited.
+    API endpoint that allows feeds to be viewed, added, deleted and en/disabled.
     """
     queryset = Feed.objects.all()
     serializer_class = FeedListSerializer
@@ -40,7 +37,7 @@ class FeedViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetM
 
 class EntryViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
-    API endpoint that allows feed entries to be viewed or edited.
+    API endpoint that allows feed entries to be viewed.
     """
     http_method_names = ('get', 'head', 'options', )
     queryset = Entry.objects.all()
@@ -50,7 +47,7 @@ class EntryViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSet
 
 class WordCountViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
-    API endpoint that allows words in an entry to be viewed or edited.
+    API endpoint that allows word counts in an entry to be viewed.
     """
     http_method_names = ('get', 'head', 'options', )
     queryset = WordCount.objects.all().order_by('-count')
@@ -116,7 +113,6 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
             'f': f,
         }
 
-
     def get_queryset(self, is_for_detail=False):
         queryset = super(WordCountRootViewSet, self).get_queryset(is_for_detail)
         w, e, f = map(self.get_query().get, ('w', 'e', 'f'))
@@ -150,9 +146,13 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
                     queryset = queryset.filter(entry__feed__id=f_int).distinct()
                 else:  # ?f=<url>
                     queryset = queryset.filter(entry__feed__url=f).distinct()
+
         return queryset.order_by('-count')
 
     def list(self, request, *args, **kwargs):
+        """
+        Add a few additional fields to this ListView
+        """
         response = super(WordCountRootViewSet, self).list(request, *args, **kwargs)
         if is_client_error(self.status):
             return Response(self.message, status=self.status)
@@ -190,6 +190,7 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
     "f": "http://blog.codinghorror.com/rss/"
     }
     Note: JSON does not support single quotes!!!11
+    Note2: Don't forget content-type: application/json 
     """
 
     json_query = None
@@ -205,10 +206,14 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
         determine what kind of exception to raise.
         """
         if request.method == 'POST':
+            # noinspection PyUnresolvedReferences
             return self.get(request, *args, **kwargs)
         super(WordCountSimpleJsonViewSet, self).http_method_not_allowed(request, *args, **kwargs)
 
     def get_query(self):
+        """
+        Fetch query valued from request body instead from URL query parameters.
+        """
         if self.request.method == 'POST':
             if self.json_query is None:
                 body = self.request.body.strip()

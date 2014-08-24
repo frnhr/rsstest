@@ -10,6 +10,9 @@ from api.models import Feed, Entry, Word, WordCount
 
 
 def tick(desc=None):
+    """
+    Poor man's code profiling tool.
+    """
     if desc != False:
         if settings.DEBUG:
             print "{}tick: {}".format(
@@ -17,8 +20,6 @@ def tick(desc=None):
                 time.time() - tick.last
             )
     tick.last = time.time()
-
-
 tick.last = 0
 
 
@@ -40,7 +41,7 @@ class Command(BaseCommand):
                     entry.text = strip_tags(rss_entry.description)
                     entry.url = rss_entry.link
                     entry.save()
-                #@TODO handle situations when entry description changes
+                #@TODO handle situations when entry description changes?
 
                 if just_created:
                     wordcount = {}
