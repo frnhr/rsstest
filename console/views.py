@@ -40,3 +40,5 @@ class FeedsView(ModelFormSetView):
         return context
 
 
+class WordsView(UserContextMixin, TemplateView):
+    template_name = 'console/words.html'

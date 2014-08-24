@@ -27,6 +27,26 @@ class RenameResultsCountMixin(object):
         return response
 
 
+# noinspection PyUnresolvedReferences
+class AggregateCountMixin(object):
+    """
+    Calculates a sun of all "count" fields.
+    Not using SQL aggregation here, no need, and this way we can support ValuesQuerySet too.
+    """
+    def list(self, request, *args, **kwargs):
+        response = super(AggregateCountMixin, self).list(request, *args, **kwargs)
+        queryset = self.get_queryset()
+        try:
+            queryset.all()[0]['count']
+        except TypeError:
+            get_count = lambda item: item.count
+        else:
+            get_count = lambda item: item['count']
+        count_sum = sum(get_count(item) for item in queryset.all())
+        response.data.insert(3, 'count__sum', count_sum)
+        return response
+
+
 class FeedViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows feeds to be viewed, added, deleted and en/disabled.
@@ -110,7 +130,7 @@ class QueryFilterMixin(object):
         }
 
 
-class WordCountRootViewSet(QueryFilterMixin, RenameResultsCountMixin, DetailSerializerMixin, viewsets.ModelViewSet):
+class WordCountRootViewSet(AggregateCountMixin, QueryFilterMixin, RenameResultsCountMixin, DetailSerializerMixin, viewsets.ModelViewSet):
     """
     API endpoint that shows word counts per entries. Allows querying for word, entry and feed.
 
@@ -165,11 +185,6 @@ class WordCountRootViewSet(QueryFilterMixin, RenameResultsCountMixin, DetailSeri
         response = super(WordCountRootViewSet, self).list(request, *args, **kwargs)
         if is_client_error(self.status):
             return Response(self.message, status=self.status)
-        #@TODO move count_sum into a mixin 
-        count_sum = self.get_queryset().aggregate(Sum('count'))['count__sum']
-        if count_sum is None:
-            count_sum = 0
-        response.data.insert(3, 'count__sum', count_sum)
         query_dict = self.request.GET.copy()
         if 'page' in query_dict.keys():
             del query_dict['page']
@@ -237,7 +252,7 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
         return self.empty_query if not self.json_query else self.json_query
 
 
-class WordCountTopViewSet(QueryFilterMixin, RenameResultsCountMixin, ListModelMixin, GenericAPIView, viewsets.ViewSet):
+class WordCountTopViewSet(QueryFilterMixin, AggregateCountMixin, RenameResultsCountMixin, ListModelMixin, GenericAPIView, viewsets.ViewSet):
     serializer_class = WordCountTopSerializer
 
     def get_queryset(self, is_for_detail=False):

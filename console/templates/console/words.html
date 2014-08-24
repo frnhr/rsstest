@@ -1,0 +1,50 @@
+{% extends 'console/base.html' %}
+
+{% block top_nav %}{% include 'console/inc/top_nav.html' with active="words" %}{% endblock %}
+
+
+{% block content %}
+    <div class="row">
+        <div class="col-sm-12">
+            <h1>These are words</h1>
+            <p class="lead">The bestest words. Sorted by their awesomeness.</p>
+            <p>This view uses datatables. It's JS-only, meaning ot won't work without JS.</p>
+            <p>Datatable is in "server mode", meaning that all pagination and other data manipulation is done on the server, and not in the browser as is default.</p>
+
+            <table id="words" class="display" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Word</th>
+                        <th>Count</th>
+                    </tr>
+                </thead>
+         
+                <tfoot>
+                    <tr>
+                        <th>Word</th>
+                        <th>Count</th>
+                    </tr>
+                </tfoot>
+            </table>
+          </div>
+      </div>
+
+{% endblock content %}
+
+
+{% block extrafoot %}
+    {{ block.super }}
+    <script type="text/javascript">
+        jQuery(function($){
+            $('#words').dataTable({
+                "ajax": '{% url "words-top-list" %}',
+                "bProcessing": true,
+                "bServerSide": true,
+                "results": [
+                    { "results": "word" },
+                    { "results": "count" }
+                ]
+            });
+        });
+    </script>
+{% endblock extrafoot %}

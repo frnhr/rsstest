@@ -15,8 +15,11 @@
         
         <!-- Custom styles for this template -->
         <link href="{{ STATIC_URL }}console/bootstrap-3.2.0/css/jumbotron-narrow.css" rel="stylesheet" />
+        <link href="{{ STATIC_URL }}console/datatables-1.10.2/css/jquery.dataTables.min.css" rel="stylesheet" />
         <link href="{{ STATIC_URL }}console/style.css" rel="stylesheet" />
     
+        {% block extrahead %}{% endblock %}
+        
     </head>
 
     <body>
@@ -37,7 +40,9 @@
         
         
         <script type="text/javascript" src="{{ STATIC_URL }}console/jquery-1.11.1/jquery-1.11.1.min.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}console/datatables-1.10.2/js/jquery.dataTables.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}console/bootstrap-3.2.0/js/bootstrap.min.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}console/console.js"></script>
+        {% block extrafoot %}{% endblock %}
     </body>
 </html>
