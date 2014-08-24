@@ -50,9 +50,11 @@ class AggregateCountMixin(object):
 class DatatableSupportMixin(object):
 
     def list(self, request, *args, **kwargs):
+        if request.GET.get('draw', False):
+            self.kwargs[self.page_kwarg] = int(request.GET['start']) / int(request.GET['length']) + 1
         response = super(DatatableSupportMixin, self).list(request, *args, **kwargs)
         if request.GET.get('draw', False):
-            response.data['draw'] = request.GET['draw']
+            response.data['draw'] = int(request.GET['draw'])
             response.data['recordsTotal'] = response.data['results_count']
             response.data['recordsFiltered'] = response.data['results_count']
             response.data['data'] = response.data['results']
