@@ -148,22 +148,58 @@ class WordField(serializers.CharField):
 class WordCountListSerializer(serializers.HyperlinkedModelSerializer):
     _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
     word = WordField()
-    
+
     class Meta:
         model = WordCount
         fields = ('_url', 'word', 'count', )
+
+class WordCountWordListSerializer(serializers.HyperlinkedModelSerializer):
+    _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
+    entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
+
+    class Meta:
+        model = WordCount
+        fields = ('_url', 'entry', 'count', )
+
+
+class WordListSerializer(serializers.HyperlinkedModelSerializer):
+    wordcounts = WordCountWordListSerializer()
+    
+    class Meta:
+        model = Word
+        fields = ('_url', 'word', 'wordcounts', )
+
 
 
 # detail serializers
 
 
 class WordSerializer(serializers.HyperlinkedModelSerializer):
-    _url = HyperlinkNestedSelf(view_name="feeds-entries-word-detail", parents_lookup=['entry__feed', 'entry', ])
-    entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
     
+    class WordCountWordSerializer(serializers.HyperlinkedModelSerializer):
+        
+        class FeedURLField(Field):
+            def field_to_native(self, obj, field_name):
+                return obj.entry.feed.url
+        
+        class EntryTitleField(Field):
+            def field_to_native(self, obj, field_name):
+                return obj.entry.title
+        
+        _url = HyperlinkNestedSelf(view_name="feeds-entries-wordcount-detail", parents_lookup=['entry__feed', 'entry', ])
+        entry = HyperlinkNestedSelf(view_name="feeds-entry-detail", parents_lookup=['feed', ], obj_field='entry')
+        entry_title = EntryTitleField()
+        feed_url = FeedURLField()
+        
+        class Meta:
+            model = WordCount
+            fields = ('_url', 'entry', 'count', 'feed_url', 'entry_title' )
+
+    wordcounts = WordCountWordSerializer()
+
     class Meta:
         model = Word
-        fields = ('_url', 'word', 'count', 'entry', )
+        fields = ('_url', 'word', 'wordcounts', )
 
 
 class WordCountSerializer(serializers.HyperlinkedModelSerializer):

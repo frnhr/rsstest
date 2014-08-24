@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework_extensions.mixins import NestedViewSetMixin, DetailSerializerMixin
 from api.models import Feed, Entry, Word, WordCount
 from .serializers import FeedListSerializer, EntryListSerializer, EntrySerializer, WordCountSerializer, FeedSerializer, \
-    WordSerializer, WordCountListSerializer
+    WordSerializer, WordCountListSerializer, WordListSerializer
 
 
 class FeedViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
@@ -35,10 +35,11 @@ class WordCountViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.Model
     serializer_detail_class = WordCountSerializer
 
 
-class WordViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
+class WordViewSet(DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """
     API endpoint that allows words in an entry to be viewed or edited.
     """
     http_method_names = ('get', 'head', 'options', )
     queryset = Word.objects.all()
-    serializer_class = WordSerializer
+    serializer_class = WordListSerializer
+    serializer_detail_class = WordSerializer

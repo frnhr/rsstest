@@ -10,6 +10,7 @@ admin.autodiscover()
 
 router = ExtendedDefaultRouter()
 (
+    router.register(r'words', views.WordViewSet),
     router.register(r'feeds',
                     views.FeedViewSet,
                     base_name='feed')
