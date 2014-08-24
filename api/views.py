@@ -57,7 +57,60 @@ class WordCountViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedVie
     serializer_detail_class = WordCountSerializer
 
 
-class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, viewsets.ModelViewSet):
+# noinspection PyUnresolvedReferences
+class QueryFilterMixin(object):
+    def get_queryset(self, is_for_detail=False):
+        queryset = super(QueryFilterMixin, self).get_queryset(is_for_detail)
+        if not is_for_detail:
+            queryset = self.filter_queryset(queryset)
+        return queryset
+
+    def filter_queryset(self, queryset):
+        w, e, f = map(self.get_query().get, ('w', 'e', 'f'))
+        if f and e:
+            #@TODO this self.stuff thing is not the prettiest way of accomplishing this.
+            # perhaps move this check to list()?
+            # it tests thread-safe though.
+            self.status = status.HTTP_406_NOT_ACCEPTABLE
+            self.message = u'Please use either "f" or "e" query, not both.'
+
+        if w:  # word
+            queryset = queryset.filter(word__word=w.lower())
+
+        if e:  # entry
+            try:
+                e_int = int(e)
+            except ValueError:
+                e_int = False
+            if e_int and str(e_int) == e:  # ?e=<id>
+                queryset = queryset.filter(entry__id=e_int).distinct()
+            else:  # ?e=<url>
+                queryset = queryset.filter(entry__url=e).distinct()
+
+        if f:  # feed
+            try:
+                f_int = int(f)
+            except ValueError:
+                f_int = False
+            if f_int and str(f_int) == f:  # ?f=<id>
+                queryset = queryset.filter(entry__feed__id=f_int).distinct()
+            else:  # ?f=<url>
+                queryset = queryset.filter(entry__feed__url=f).distinct()
+
+        return queryset.order_by('-count')
+
+    def get_query(self):
+        w = self.request.GET.get('w', None)
+        f = self.request.GET.get('f', None)  # url decoded behind-the-scene
+        e = self.request.GET.get('e', None)  # url decoded behind-the-scene
+        return {
+            'w': w,
+            'e': e,
+            'f': f,
+        }
+
+
+class WordCountRootViewSet(QueryFilterMixin, RenameResultsCountMixin, DetailSerializerMixin, viewsets.ModelViewSet):
     """
     API endpoint that shows word counts per entries. Allows querying for word, entry and feed.
 
@@ -105,52 +158,6 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
     status = 200
     message = ''
 
-    def get_query(self):
-        w = self.request.GET.get('w', None)
-        f = self.request.GET.get('f', None)  # url decoded behind-the-scene
-        e = self.request.GET.get('e', None)  # url decoded behind-the-scene
-        return {
-            'w': w,
-            'e': e,
-            'f': f,
-        }
-
-    def get_queryset(self, is_for_detail=False):
-        queryset = super(WordCountRootViewSet, self).get_queryset(is_for_detail)
-        w, e, f = map(self.get_query().get, ('w', 'e', 'f'))
-        if not is_for_detail:
-            if f and e:
-                #@TODO this self.stuff thing is not the prettiest way of accomplishing this.
-                # perhaps move this check to list()?
-                # it tests thread-safe though.
-                self.status = status.HTTP_406_NOT_ACCEPTABLE
-                self.message = u'Please use either "f" or "e" query, not both.'
-
-            if w:  # word
-                queryset = queryset.filter(word__word=w.lower())
-
-            if e:  # entry
-                try:
-                    e_int = int(e)
-                except ValueError:
-                    e_int = False
-                if e_int and str(e_int) == e:  # ?e=<id>
-                    queryset = queryset.filter(entry__id=e_int).distinct()
-                else:  # ?e=<url>
-                    queryset = queryset.filter(entry__url=e).distinct()
-
-            if f:  # feed
-                try:
-                    f_int = int(f)
-                except ValueError:
-                    f_int = False
-                if f_int and str(f_int) == f:  # ?f=<id>
-                    queryset = queryset.filter(entry__feed__id=f_int).distinct()
-                else:  # ?f=<url>
-                    queryset = queryset.filter(entry__feed__url=f).distinct()
-
-        return queryset.order_by('-count')
-
     def list(self, request, *args, **kwargs):
         """
         Add a few additional fields to this ListView
@@ -158,6 +165,7 @@ class WordCountRootViewSet(RenameResultsCountMixin, DetailSerializerMixin, views
         response = super(WordCountRootViewSet, self).list(request, *args, **kwargs)
         if is_client_error(self.status):
             return Response(self.message, status=self.status)
+        #@TODO move count_sum into a mixin 
         count_sum = self.get_queryset().aggregate(Sum('count'))['count__sum']
         if count_sum is None:
             count_sum = 0
@@ -229,11 +237,12 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
         return self.empty_query if not self.json_query else self.json_query
 
 
-class WordCountTopViewSet(ListModelMixin, GenericAPIView, viewsets.ViewSet):
+class WordCountTopViewSet(QueryFilterMixin, RenameResultsCountMixin, ListModelMixin, GenericAPIView, viewsets.ViewSet):
     serializer_class = WordCountTopSerializer
 
     def get_queryset(self, is_for_detail=False):
         #@TODO add query support
         queryset = WordCount.objects.all()
+        queryset = self.filter_queryset(queryset)
         queryset = queryset.values('word__word').annotate(count=Sum('count')).order_by("-count", "word__word")
         return queryset
