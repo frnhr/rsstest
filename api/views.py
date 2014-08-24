@@ -211,7 +211,13 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
     def get_query(self):
         if self.request.method == 'POST':
             if self.json_query is None:
-                self.json_query = JSONDecoder().decode(self.request.body) 
-        return self.empty_query if self.json_query is None else self.json_query
+                body = self.request.body.strip()
+                if not body:
+                    body = '{}'  # allow empty POST
+                try:
+                    self.json_query = JSONDecoder().decode(body)
+                except ValueError as e:
+                    self.status = status.HTTP_406_NOT_ACCEPTABLE
+                    self.message = "JSON decode error: {}".format(e.message)
+        return self.empty_query if not self.json_query else self.json_query
 
-    
