@@ -216,9 +216,10 @@ class EntrySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class FeedSerializer(serializers.HyperlinkedModelSerializer):
-    entries = EntryListSerializer(many=True, read_only=True)
-
+    #entries = EntryListSerializer(many=True, read_only=True)
+    _entries = HyperlinkNestedViewField(view_name='feeds-entry-list', parents_lookup=['feed', ], nested_field="entries")
+    
     class Meta:
         model = Feed
-        fields = ('_url', 'url', 'is_active', 'entries', )
+        fields = ('_url', '_entries', 'url', 'is_active', )
 
