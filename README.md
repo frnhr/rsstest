@@ -11,7 +11,7 @@ A test project that counts words in RSS feeds.
 
 Features:
  * management command that loads the feeds and counts words
- * customized Django-rest-framework API
+ * customized Django-rest-framework API, with linked nested resources)
  * web interface (a.k.a. the console)
  * simple django-admin
  
@@ -26,7 +26,7 @@ Your computer says: "pleeease"
 
 ### Get the code
 
-Either go a clone:
+Either do a clone:
 
     git clone git@github.com:frnhr/rsstest.git
     
