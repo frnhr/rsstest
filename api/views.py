@@ -38,7 +38,7 @@ class AggregateCountMixin(object):
         queryset = self.get_queryset()
         try:
             queryset.all()[0]['count']
-        except TypeError:
+        except (TypeError, IndexError):
             get_count = lambda item: item.count
         else:
             get_count = lambda item: item['count']
