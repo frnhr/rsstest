@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+VERSION = "1.1"
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -21,6 +23,7 @@ SECRET_KEY = '=b==6wzmik-fisip@rldao8)!5)yzppd%#z==h=gc#i8+21e00'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TICK_DEBUG = False
 
 TEMPLATE_DEBUG = True
 
@@ -55,6 +58,17 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.core.context_processors.static",
+    "django.core.context_processors.tz",
+    "django.contrib.messages.context_processors.messages",
+    'rsstest.context_processors.version',
 )
 
 ROOT_URLCONF = 'rsstest.urls'
