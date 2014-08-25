@@ -42,3 +42,8 @@ class FeedsView(ModelFormSetView):
 
 class WordsView(UserContextMixin, TemplateView):
     template_name = 'console/words.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(WordsView, self).get_context_data(**kwargs)
+        context['feeds'] = Feed.objects.all()
+        return context
