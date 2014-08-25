@@ -3,7 +3,7 @@ from django.utils import timezone
 
 
 class Feed(models.Model):
-    url = models.URLField(null=False, blank=False)
+    url = models.URLField(null=False, blank=False, db_index=True)
     is_active = models.BooleanField(null=False, blank=True, default=True)
 
     def __unicode__(self):
@@ -18,7 +18,7 @@ class Entry(models.Model):
     timestamp = models.DateTimeField()
     title = models.CharField(max_length=1000, null=False, blank=True, default=u'')
     text = models.TextField(null=False, blank=True, default=u'')
-    url = models.URLField(null=False, blank=False, default=u'')
+    url = models.URLField(null=False, blank=False, default=u'', db_index=True)
 
     def __unicode__(self):
         if self.title:
