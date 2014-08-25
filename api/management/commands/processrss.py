@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import re
 import string
 from django.conf import settings
@@ -46,7 +48,7 @@ class Command(BaseCommand):
                 if just_created:
                     wordcount = {}
                     tick(False)
-                    words = re.sub(r'[%s]' % re.escape(string.punctuation), ' ', entry.text.lower()).split()
+                    words = re.sub(ur'[%s“”]' % re.escape(string.punctuation), ' ', entry.text.lower()).split()
                     tick('words list')
                     words.sort()
                     tick('words sort')

@@ -8,9 +8,11 @@
         <div class="col-sm-12">
             <h1>These are words</h1>
             <p class="lead">The bestest words. Sorted by their awesomeness.</p>
-            <p>This view uses datatables. It's JS-only, meaning ot won't work without JS.</p>
+            <p>This view uses datatables. It's JS-only, it won't work without JS. No graceful degradation here sorry. And no progressive enhancement either, if there was ever a difference...</p>
             <p>Datatable is in "server mode", meaning that all pagination and other data manipulation is done on the server, and not in the browser as is default.</p>
+            <p>This view uses the API, no additional coding required. Well, almost, there is a DatatableSupportMixin thingy...</p>
 
+            <div class="alert alert-danger nojs" role="alert">This page uses JavaScript. Please enable J-a-v-a-S-c-r-i-p-t in your browser.</div>
             <table id="words" class="display" cellspacing="0" width="100%">
                 <thead>
                     <tr>
