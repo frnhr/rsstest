@@ -5,7 +5,7 @@ from . import views
 
 router = ExtendedDefaultRouter()
 (
-    router.register(r'words', views.WordCountRootViewSet),
+    router.register(r'wordcounts', views.WordCountRootViewSet),
     router.register(r'feeds',
                     views.FeedViewSet,
                     base_name='feed')
@@ -17,13 +17,13 @@ router = ExtendedDefaultRouter()
                     views.WordCountViewSet,
                     base_name='feeds-entries-wordcount',
                     parents_query_lookups=['entry__feed', 'entry', ]),
+    router.register(r'words', views.WordCountTopViewSet, base_name='words-top'),
 )
 
 
 additional_router = SimpleRouter()
-additional_router.register(r'words/simple', views.WordCountSimpleViewSet, base_name='words-simple'),
-additional_router.register(r'words/json', views.WordCountSimpleJsonViewSet, base_name='words-json'),
-additional_router.register(r'words/top', views.WordCountTopViewSet, base_name='words-top'),
+additional_router.register(r'wordcounts/simple', views.WordCountSimpleViewSet, base_name='wordcounts-simple'),
+additional_router.register(r'wordcounts/json', views.WordCountSimpleJsonViewSet, base_name='wordcounts-json'),
 
 
 urlpatterns = patterns('',

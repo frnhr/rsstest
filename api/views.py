@@ -204,14 +204,14 @@ class WordCountRootViewSet(AggregateCountMixin, QueryFilterMixin, RenameResultsC
         query_dict = self.request.GET.copy()
         if 'page' in query_dict.keys():
             del query_dict['page']
-        response.data.insert(4, '_simple', reverse('words-simple-list', request=self.request) + ("?{}".format(query_dict.urlencode()) if query_dict else ''))
-        response.data.insert(5, '_simple_json', reverse('words-json-list', request=self.request))
+        response.data.insert(4, '_simple', reverse('wordcounts-simple-list', request=self.request) + ("?{}".format(query_dict.urlencode()) if query_dict else ''))
+        response.data.insert(5, '_simple_json', reverse('wordcounts-json-list', request=self.request))
         return response
 
 
 class WordCountSimpleViewSet(WordCountRootViewSet):
     """
-    Simplified API endpoint, same as /words, but with only count__sum as output. 
+    Simplified API endpoint, same as /wordcounts, but with only count__sum as output. 
     """
     serializer_class = WordCountRootSerializer
 
@@ -224,7 +224,7 @@ class WordCountSimpleViewSet(WordCountRootViewSet):
 
 class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
     """
-    Simplified API endpoint, same as /words/simple, but it takes JSON query and responds to POST (instead of query parameters and GET).
+    Simplified API endpoint, same as /wordcounts/simple, but it takes JSON query and responds to POST (instead of query parameters and GET).
     Sample JSON query object:
     {
     "w": "the",
