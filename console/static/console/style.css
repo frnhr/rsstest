@@ -19,3 +19,13 @@ hr.vspace {
 html * *.strong {
   font-weight: bold;
   /* /me no likes !important */ }
+
+.container > .header:after {
+  content: "";
+  display: block;
+  clear: both; }
+.container > .header .version {
+  display: inline-block;
+  vertical-align: middle;
+  padding-left: 1em;
+  line-height: 3em; }
