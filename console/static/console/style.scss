@@ -1,0 +1,27 @@
+.nav-pills.center {
+    display: inline-block;
+}
+
+.inline_img {
+    max-height: 40px;
+    width: auto;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+form.formset fieldset {
+    padding-bottom: 2em;
+    
+    input[type="checkbox"] {
+        margin-top: 0.8em;
+    }
+}
+
+hr.vspace {
+    border: none;
+    margin-top: 2em;
+}
+
+html * *.strong {
+    font-weight: bold;  /* /me no likes !important */
+}

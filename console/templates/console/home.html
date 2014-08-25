@@ -1,0 +1,23 @@
+{% extends 'console/base.html' %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h1>This is web console</h1>
+        <p class="lead">We use web console to commune with counted words in a najs interface.</p>
+        {% if user.is_anonymous %}
+            <hr />
+            <p class="{% if login_bold %}strong{% endif %}">Oh, we sea your not logged in! Not good no good... Please find the big green button and do a click.</p>
+            <p><a class="btn btn-lg btn-success" href="{% url "login" %}?next={% url "home" %}" role="button">Log in your self</a></p>
+        {% else %}
+            <hr />
+            <p>Great success!</p>
+            <p>Please kindly be informed here are the two pages you can make click to:</p>
+                <ul class="nav nav-pills center">
+                    <li><a href="{% url 'feeds' %}">Feeds</a></li>
+                    <li><a href="{% url 'words' %}">Words</a></li>
+                </ul>
+        {% endif %}
+      </div>
+
+{% endblock content %}
+            
