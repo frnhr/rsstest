@@ -24,7 +24,7 @@ DEBUG = True
 
 TEMPLATE_DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost',]
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     
     'south',
     'django_extensions',
+    
     'debug_toolbar',
     
     'rest_framework',
@@ -99,3 +100,10 @@ REST_FRAMEWORK = {
     'PAGINATE_BY_PARAM': 'page_size',
     'MAX_PAGINATE_BY': 100 ,
 }
+
+
+# lazy man's local Django settings:
+try:
+    from settings_local import *
+except ImportError:
+    pass
