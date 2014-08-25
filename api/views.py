@@ -228,6 +228,7 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
     Sample JSON query object:
     {
     "w": "the",
+    "e" : "",
     "f": "http://blog.codinghorror.com/rss/"
     }
     Note: JSON does not support single quotes!!!11
@@ -270,6 +271,23 @@ class WordCountSimpleJsonViewSet(WordCountSimpleViewSet):
 
 class WordCountTopViewSet(DatatableSupportMixin, QueryFilterMixin, AggregateCountMixin, RenameResultsCountMixin,
                           ListModelMixin, GenericAPIView, viewsets.ViewSet):
+    """
+    A custom resource that exposes aggregated word count.
+    Can be filtered for a particular by feed or be entry (not both). Can also be filtered by word, but other resources within API are better suited for that job.
+    
+    Queries should be made using POST method.
+    
+    Example queries:
+    {
+    "f": "http://blog.codinghorror.com/rss/"
+    }
+    or
+    {
+    "w": "http://blog.codinghorror.com/the-just-in-time-theory/"
+    }
+    Note: JSON does not support single quotes!!!11
+    Note2: Don't forget content-type: application/json 
+    """
     serializer_class = WordCountTopSerializer
 
     def get_queryset(self, is_for_detail=False):
