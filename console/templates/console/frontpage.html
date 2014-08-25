@@ -1,0 +1,19 @@
+{% extends 'console/base.html' %}
+
+{% block top_nav %}{% include 'console/inc/top_nav.html' with active="frontpage" %}{% endblock %}
+
+{% block content %}
+    <div class="jumbotron">
+        <h1>Here we be counting words</h1>
+        <p class="lead">RSS feeds haz entries haz words. We count words in entries in feeds. You filter words per entries or feeds. Or not.</p>
+        <hr />
+        <p class="lead">Where do you want to go today?</p>
+        <ul class="nav nav-pills center">
+            <li><a href="{% url 'api-root' %}">Browseable API</a></li>
+            <li><a href="{% url 'home' %}">Web console</a></li>
+            <li><a href="{% url 'admin:index' %}">Admin</a></li>
+        </ul>
+      </div>
+
+{% endblock content %}
+            

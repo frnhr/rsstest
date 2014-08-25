@@ -1,0 +1,25 @@
+{% extends 'console/base.html' %}
+
+{% block top_nav %}{% include 'console/inc/top_nav.html' with active="login" %}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6 col-md-push-3">
+            <h1>Login</h1>
+            <p class="lead">Please log your self in.</p>
+            <p>Simplest possible login form. No styling, no way to log out...</p>
+            <p>Use these credentials:</p>
+            <ul>
+                <li>user: admin</li>
+                <li>pass: 2565</li>
+            </ul>
+            <form action="" method="post" class="form-horizontal formset" role="form">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Login</button>
+                <hr class="vspace" />
+            </form>
+          </div>
+      </div>
+
+{% endblock content %}

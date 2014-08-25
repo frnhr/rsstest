@@ -1,5 +1,5 @@
 from django.views.generic.base import TemplateView
-
+from django.shortcuts import redirect
 from extra_views.formsets import ModelFormSetView
 from api.models import Feed
 from .forms import FeedActivateForm
@@ -16,11 +16,35 @@ class UserContextMixin(object):
         return context
 
 
+# noinspection PyUnresolvedReferences
+class LoginRequiredMixin(object):
+    """
+    Ensures that user must be authenticated in order to access view.
+    """
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_anonymous():
+            request.session['login_bold'] = True
+            return redirect("home")
+        else:
+            return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
+
+
+class FrontpageView(TemplateView):
+    template_name = 'console/frontpage.html'
+
+
 class HomeView(UserContextMixin, TemplateView):
     template_name = 'console/home.html'
 
+    def get_context_data(self, **kwargs):
+        context = super(HomeView, self).get_context_data(**kwargs)
+        if self.request.session.get('login_bold', False):
+            context['login_bold'] = True
+            del self.request.session['login_bold']
+        return context
 
-class FeedsView(ModelFormSetView):
+
+class FeedsView(LoginRequiredMixin, ModelFormSetView):
     
     form_class = FeedActivateForm
     model = Feed
@@ -40,7 +64,7 @@ class FeedsView(ModelFormSetView):
         return context
 
 
-class WordsView(UserContextMixin, TemplateView):
+class WordsView(LoginRequiredMixin, TemplateView):
     template_name = 'console/words.html'
 
     def get_context_data(self, **kwargs):

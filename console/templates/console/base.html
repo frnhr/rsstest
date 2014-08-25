@@ -27,7 +27,7 @@
         <div class="container">
             <div class="header">
                 {% block top_nav %}{% include 'console/inc/top_nav.html'%}{% endblock %}
-                <h3 class="text-muted">RSS Word Counter</h3>
+                <a href="{% url 'frontpage' %}"><h3 class="text-muted">RSS Word Counter</h3></a>
             </div>
         
             {% block content %}{% endblock%}

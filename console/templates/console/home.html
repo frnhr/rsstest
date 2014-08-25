@@ -2,12 +2,12 @@
 
 {% block content %}
     <div class="jumbotron">
-        <h1>Here we be counting words</h1>
-        <p class="lead">RSS feeds haz entries haz words. We count words in entries in feeds. You filter words per entries or feeds. Or not.</p>
+        <h1>This is web console</h1>
+        <p class="lead">We use web console to commune with counted words in a najs interface.</p>
         {% if user.is_anonymous %}
             <hr />
-            <p>Oh, we sea your not logged in! Not good no good... Please find the big green button and do a click.</p>
-            <p><a class="btn btn-lg btn-success" href="#" role="button">Log in your self</a></p>
+            <p class="{% if login_bold %}strong{% endif %}">Oh, we sea your not logged in! Not good no good... Please find the big green button and do a click.</p>
+            <p><a class="btn btn-lg btn-success" href="{% url "login" %}?next={% url "home" %}" role="button">Log in your self</a></p>
         {% else %}
             <hr />
             <p>Great success!</p>

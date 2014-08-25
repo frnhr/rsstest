@@ -47,6 +47,7 @@ class AggregateCountMixin(object):
         return response
 
 
+# noinspection PyUnresolvedReferences
 class DatatableSupportMixin(object):
 
     def list(self, request, *args, **kwargs):
@@ -60,6 +61,7 @@ class DatatableSupportMixin(object):
             response.data['data'] = response.data['results']
             del response.data['results']
         return response
+
 
 class FeedViewSet(RenameResultsCountMixin, DetailSerializerMixin, NestedViewSetMixin, viewsets.ModelViewSet):
     """

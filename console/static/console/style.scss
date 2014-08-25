@@ -21,3 +21,7 @@ hr.vspace {
     border: none;
     margin-top: 2em;
 }
+
+html * *.strong {
+    font-weight: bold;  /* /me no likes !important */
+}
