@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+VERSION = "1.1"
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -21,6 +23,7 @@ SECRET_KEY = '=b==6wzmik-fisip@rldao8)!5)yzppd%#z==h=gc#i8+21e00'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+TICK_DEBUG = False
 
 TEMPLATE_DEBUG = True
 

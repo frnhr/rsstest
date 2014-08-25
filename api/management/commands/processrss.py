@@ -15,13 +15,14 @@ def tick(desc=None):
     """
     Poor man's code profiling tool.
     """
-    if desc != False:
-        if settings.DEBUG:
-            print "{}tick: {}".format(
-                "%s " % desc if desc else '',
-                time.time() - tick.last
-            )
-    tick.last = time.time()
+    if settings.TICK_DEBUG:
+        if desc != False:
+            if settings.DEBUG:
+                print "{}tick: {}".format(
+                    "%s " % desc if desc else '',
+                    time.time() - tick.last
+                )
+        tick.last = time.time()
 tick.last = 0
 
 

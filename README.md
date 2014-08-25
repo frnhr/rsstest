@@ -3,6 +3,8 @@
 
 RSS word counter, because we can
 
+v.1.1
+
 ## What
 
 A test project that counts words in RSS feeds.
